@@ -2,28 +2,29 @@ import time
 import msvcrt
 import os
 
-distancia = float(input("Insira a distância a ser percorrida: "))                #Valores fornecidos pelo usuario
-combustivel = float(input("Insira o combustível:(L)"))                           #Valores fornecidos pelo usuario
-tempo_desejado = int(input("Insira o tempo desejado de conclusão:(Segundos)"))   #Valores fornecidos pelo usuario
+distancia = float(input("DISTÂNCIA A SER PERCORRIDA:(KM) "))                #Valores fornecidos pelo usuario
+combustivel = float(input("COMBUSTÍVEL DISPONÍVEL:(L)"))                           #Valores fornecidos pelo usuario
+tempo_desejado = int(input("TEMPO DESEJADO DE CONCLUSÃO:(SEG)"))   #Valores fornecidos pelo usuario
 
-cont = 0                                    #Conta a cada repetição que o carro não esta parado, usado para as médias
-
-tempo = 0                                   #Inicializo o tempo para contar a cada repetição
-tempo_parado = 0                            #Inicializo o tempo para contar a cada repetição(Parado)                          
-tempo_acima25 = 0                           #Inicializo o tempo para contar a cada repetição(Que está acima de 25KM/h)
-
-velocidade_somada = 0                       #Usado para somar as velocidades posteriormente        
-distancia_percorida = 0                     #Usado para verificar a distância percorrida
-
-consumo_somado = 0                          
-combustivel_usado = combustivel                   
-cambio = 0
-velocidade = 0
 consumo = [0, 5.5, 4.7, 9.4, 8.1, 10.2, 9.6, 14.7, 13.6, 12.5]
+distancia = distancia * 1000     #Converto a distancia para metros de cara
+cont = 0                                    
+tempo = 0                                   
+tempo_parado = 0                                                      
+tempo_acima25 = 0   
+velocidade = 0
+velocidade_somada = 0                              
+distancia_percorida = 0                     
 consumo_atual = 0
+consumo_somado = 0                          
+combustivel_restante = combustivel     #Variavel para não perder o combustível inicial com as contas               
+cambio = 0                          #Carro começa parado
+
 while True:
     tempo += 1                                  
     tempo_restante = tempo_desejado - tempo
+    print("TECLAS [0] a [9] VARIAM A VELOCIDADE")
+    print("APERTE Q PARA SAIR")
     if msvcrt.kbhit():
         tecla = msvcrt.getch()
         if tecla.isdigit():
@@ -33,56 +34,72 @@ while True:
         elif tecla == b'Q'.lower():
             print("Sair selecionado")
             break
-                                              #Alternador de "marchas/velocidade"
-    if cambio == 0:                                                 #Se velocidade 0, carro parado.
+
+    if cambio == 0:                                                
         tempo_parado += 1
+        velocidade = 0
+        consumo_atual = 0
     else:
-        consumo_atual = consumo[cambio]                #Consumo = consumo[no indice fornecido anteriormente, coincidentemente, 1 representa consumo 1]
-        velocidade = cambio                      #Velocidade será = o input do usuário
-        velocidade_somada += velocidade          #Soma toda velocidade a cada segundo
+        consumo_atual = consumo[cambio]                
+        velocidade = cambio                      
+        velocidade_somada += velocidade          
         cont += 1
         consumo_somado += consumo_atual
-
-    velocidadeKMH = velocidade * 3.6
-    combustivel_usado -= consumo_atual
-
-    if velocidadeKMH > 25:
-        tempo_acima25 += 1
+        combustivel_restante -= (velocidade / 1000) / consumo_atual
 
     distancia_percorida += velocidade
     distancia_faltante_metros = distancia - distancia_percorida
-    tempo_javiajado = tempo + tempo_parado
-    if combustivel_usado <= 0:
-        print("Cabou a gasosa")
+    velocidadeKMH = velocidade * 3.6
+    if velocidadeKMH > 25:
+        tempo_acima25 += 1
+
+    #EXIBIÇÃO DAS INFORMAÇÕES:
+    ## :.2f significa formatar para aparecer 2 numeros apos .
+    print("===========================================")
+    print("           COMPUTADOR DE BORDO")
+    print("===========================================\n")
+
+    if cambio == 0:
+        print("---Veículo PARADO---")
+        print(f"TEMPO: {tempo}")
+        
+    if combustivel_restante <= 0:
+        print("---SEM COMBUSTÍVEL---")
         break
-    if cambio > 0:
-        print(f"Velocidade atual:(m/s) {cambio}")
+    if distancia_faltante_metros <= 0:
+        print("===VOCÊ CHEGOU AO SEU DESTINO===")
+        break
+    if tempo > tempo_desejado:
+        print("===TEMPO DESEJADO ULTRAPASSADO===")
+    if cambio > 0:    #Só printa as informações se "cambio" > 0, evita erro por div 0
+        print("==================VELOCIDADE==================")
+        print(f"Velocidade atual:(M/S) {cambio}")
         print(f"Velocidade atual:(Km/h) {cambio * 3.6}")
-        print(f"Velocidade média rodando: {velocidade_somada / cont}")
-        print(f"Velocidade para o tempo desejado de conclusão:(M/S) {distancia_faltante_metros / tempo_restante}")
+        print(f"Velocidade média rodando: {velocidade_somada / cont:.2f}")
+        if tempo_restante > 0:
+            print(f"Velocidade para o tempo desejado de conclusão:(M/S) {distancia_faltante_metros / tempo_restante:.2f}")
+        else:
+            print("Tempo insuficiente para a estimativa de velocidade")
 
-        print("-" * 40)
-        print("-----Distância-----")
-        print("-" * 40)
-        print(f"Distância total a percorrer:(KM) {distancia}")
+        print("==================DISTÂNCIA==================")
+        print(f"Distância total a percorrer:(KM) {distancia /1000}")  #divido por mil, pq no inicio multipliquei para virar M
         print(f"Distância percorrida:(M) {distancia_percorida}")
-        print(f"Distância percorrida:(KM) {distancia_percorida / 1000}")
-        print(f"Distância que falta para chegar:(M) {distancia_faltante_metros}")
-        print(f"Distância que falta para chegar:(KM) {distancia_faltante_metros / 1000}")
+        print(f"Distância percorrida:(KM) {distancia_percorida / 1000:.2f}")
+        print(f"Distância que falta para chegar:(M) {distancia_faltante_metros:.2f}")
+        print(f"Distância que falta para chegar:(KM) {distancia_faltante_metros / 1000:.2f}")
 
-        print("-" * 40)
-        print("-----Tempo-----")
-        print("-" * 40)
-        print(f"Tempo desejado de viagem(S) {tempo_desejado}, (M) {tempo_desejado / 60}, (H) {tempo_desejado / 3600} ")
-        print(f"Tempo ja viajado:(S) {tempo_javiajado}")
-        print(f"Tempo de viagem:(HH:MM:SS) ")
+        print("==================TEMPO==================")
+        print(f"Tempo parado: {tempo_parado}")
+        print(f"Tempo desejado de viagem(S) {tempo_desejado}, (M) {tempo_desejado / 60:.2f}, (H) {tempo_desejado / 3600:.2f} ")
+        print(f"Tempo ja viajado:(S) {tempo}")
+        print(f"Tempo de viagem:(HH:MM:SS) {tempo // 3600}:{(tempo % 3600)//60}:{tempo % 60} ")
         print(f"Tempo de velocidade > 25KM/H: {tempo_acima25}(S)")
 
-        print("-" * 40)
-        print("-----Combustível-----")
-        print("-" * 40)
-        print(f"Total de combustível no tanque:(L) {combustivel_usado}")
-        print(f"Consumo Médio:(KM/L) {consumo_somado / cont}")
-        print(f"Consumo atual:(KM/L) {consumo_atual}")
-        time.sleep(2)
-        os.system('cls')
+        print("==================COMBUSTÍVEL==================")
+        print(f"Total de combustível no tanque:(L) {combustivel_restante:.2f}")
+        print(f"Consumo Médio:(KM/L) {consumo_somado / cont:.2f}")
+        print(f"Consumo atual:(KM/L) {consumo_atual:.2f}")
+
+
+    time.sleep(1)
+    os.system('cls')
