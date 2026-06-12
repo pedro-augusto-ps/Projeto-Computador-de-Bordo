@@ -40,16 +40,16 @@ while True:
         velocidade = 0
         consumo_atual = 0
     else:
-        consumo_atual = consumo[cambio]                
+        consumo_atual = consumo[cambio]     #consumo atual = consumo no indice cambio           
         velocidade = cambio                      
         velocidade_somada += velocidade          
         cont += 1
         consumo_somado += consumo_atual
-        combustivel_restante -= (velocidade / 1000) / consumo_atual
+        combustivel_restante -= (velocidade / 1000) / consumo_atual  #Divide por 1000 pq velocidade esta em M e o consumo em KM
 
-    distancia_percorida += velocidade
-    distancia_faltante_metros = distancia - distancia_percorida
-    velocidadeKMH = velocidade * 3.6
+    distancia_percorida += velocidade                             #Soma a velocidade para obter a distancia
+    distancia_faltante_metros = distancia - distancia_percorida   #distancia total - oque ja foi percorrido
+    velocidadeKMH = velocidade * 3.6                              #Conversao da velocidade para KM/H
     if velocidadeKMH > 25:
         tempo_acima25 += 1
 
